@@ -1,0 +1,9 @@
+rta:
+  keycloak:
+    serverUrl: http://localhost:${KEYCLOAK_PORT}/
+    realm: master
+    username: ${KEYCLOAK_ADMIN}
+    password: ${KEYCLOAK_ADMIN_PASSWORD}
+    clientId: admin-cli
+server:
+  port: 0
