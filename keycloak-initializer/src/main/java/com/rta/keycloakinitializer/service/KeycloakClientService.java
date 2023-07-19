@@ -1,10 +1,7 @@
 package com.rta.keycloakinitializer.service;
 
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.ClientsResource;
-import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.RealmsResource;
-import org.keycloak.admin.client.resource.RolesResource;
+import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -65,6 +62,19 @@ public class KeycloakClientService {
         Response response = clientsResource.create(clientRepresentation);
         String createdClientId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
         System.out.println("ClientId: " + createdClientId + " - Name: " + clientRepresentation.getClientId());
+    }
+
+    private void addRolesToClient(ClientsResource clientsResource, String clientId, List<String> roles){
+        ClientResource clientResource = clientsResource.get(clientId);
+
+        for (String role: roles) {
+            RoleRepresentation roleRepresentation = new RoleRepresentation();
+            roleRepresentation.setName(role);
+            roleRepresentation.setClientRole(true);
+            roleRepresentation.setContainerId(clientId);
+
+            clientResource.roles().create(roleRepresentation);
+        }
     }
 
 
