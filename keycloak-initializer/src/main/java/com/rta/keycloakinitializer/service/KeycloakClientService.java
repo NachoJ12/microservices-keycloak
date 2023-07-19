@@ -31,7 +31,7 @@ public class KeycloakClientService {
         backendClient.setServiceAccountsEnabled(true);
         backendClient.setEnabled(true);
 
-        createClient(realmName, backendClient);
+        createClient(realmName, backendClient, List.of("USER", "MANAGER"));
 
     }
 
@@ -55,13 +55,19 @@ public class KeycloakClientService {
         System.out.println("\nRealm roles " + realmLevelRoles + " added successfully");
     }
 
-    private void createClient(String realmName, ClientRepresentation clientRepresentation){
+    private void createClient(String realmName, ClientRepresentation clientRepresentation, List<String> roles){
         RealmResource realmResource = keycloak.realm(realmName);
         ClientsResource clientsResource = realmResource.clients();
 
         Response response = clientsResource.create(clientRepresentation);
-        String createdClientId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-        System.out.println("ClientId: " + createdClientId + " - Name: " + clientRepresentation.getClientId());
+
+        if (response.getStatus() == 201) {
+            String createdClientId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+
+            addRolesToClient(clientsResource, createdClientId, roles);
+
+            System.out.println("ClientId: " + createdClientId + " - Name: " + clientRepresentation.getClientId() + " - Roles: " + roles);
+        }
     }
 
     private void addRolesToClient(ClientsResource clientsResource, String clientId, List<String> roles){
