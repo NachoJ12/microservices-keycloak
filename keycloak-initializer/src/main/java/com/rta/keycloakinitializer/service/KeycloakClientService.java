@@ -1,12 +1,16 @@
 package com.rta.keycloakinitializer.service;
 
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.ClientsResource;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RealmsResource;
 import org.keycloak.admin.client.resource.RolesResource;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 
@@ -20,9 +24,17 @@ public class KeycloakClientService {
     }
 
     public void createRealmAndConfigs(String realmName) {
-       createRealm(realmName);
-       setRealmLevelRoles(realmName, List.of("APP_USER", "APP_ADMIN"));
+        createRealm(realmName);
+        setRealmLevelRoles(realmName, List.of("APP_USER", "APP_ADMIN"));
 
+        // Create backend client representation
+        ClientRepresentation backendClient = new ClientRepresentation();
+        backendClient.setClientId("backend");
+        backendClient.setSecret("c6zWnLUoesehl8RxQZsXgfjRh7ffNkww");
+        backendClient.setServiceAccountsEnabled(true);
+        backendClient.setEnabled(true);
+
+        createClient(realmName, backendClient);
 
     }
 
@@ -45,6 +57,16 @@ public class KeycloakClientService {
         }
         System.out.println("\nRealm roles " + realmLevelRoles + " added successfully");
     }
+
+    private void createClient(String realmName, ClientRepresentation clientRepresentation){
+        RealmResource realmResource = keycloak.realm(realmName);
+        ClientsResource clientsResource = realmResource.clients();
+
+        Response response = clientsResource.create(clientRepresentation);
+        String createdClientId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
+        System.out.println("ClientId: " + createdClientId + " - Name: " + clientRepresentation.getClientId());
+    }
+
 
 
 
