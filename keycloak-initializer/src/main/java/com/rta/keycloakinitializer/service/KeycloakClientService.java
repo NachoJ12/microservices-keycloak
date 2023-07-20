@@ -86,7 +86,13 @@ public class KeycloakClientService {
         }
     }
 
+    private String getClientId(String realmName, String clientName){
+        RealmResource realmResource = keycloak.realm(realmName);
+        ClientsResource clientsResource = realmResource.clients();
+        String clientResource = clientsResource.findByClientId(clientName).get(0).getId();
 
+        return clientResource;
+    }
 
 
 }
