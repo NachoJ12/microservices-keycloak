@@ -14,6 +14,9 @@ import java.util.List;
 @Service
 public class KeycloakClientService {
 
+    private static final String BACKEND_CLIENT_ID = System.getenv("BACKEND_CLIENT_ID");
+    private static final String BACKEND_CLIENT_SECRET = System.getenv("BACKEND_CLIENT_SECRET");
+
     private final Keycloak keycloak;
 
     public KeycloakClientService(Keycloak keycloak) {
@@ -26,8 +29,8 @@ public class KeycloakClientService {
 
         // Create backend client representation
         ClientRepresentation backendClient = new ClientRepresentation();
-        backendClient.setClientId("backend");
-        backendClient.setSecret("c6zWnLUoesehl8RxQZsXgfjRh7ffNkww");
+        backendClient.setClientId(BACKEND_CLIENT_ID);
+        backendClient.setSecret(BACKEND_CLIENT_SECRET);
         backendClient.setServiceAccountsEnabled(true);
         backendClient.setEnabled(true);
 
