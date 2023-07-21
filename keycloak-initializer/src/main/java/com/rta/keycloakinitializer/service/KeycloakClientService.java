@@ -125,4 +125,8 @@ public class KeycloakClientService {
     }
 
 
+    private RealmResource getRealmResource(String realmName) {
+        return keycloak.realm(realmName);
+    }
+
 }
