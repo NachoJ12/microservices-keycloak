@@ -63,7 +63,7 @@ public class KeycloakClientService {
     }
 
     private void createClient(String realmName, ClientRepresentation clientRepresentation, List<String> roles){
-        RealmResource realmResource = keycloak.realm(realmName);
+        RealmResource realmResource = getRealmResource(realmName);
         ClientsResource clientsResource = realmResource.clients();
 
         Response response = clientsResource.create(clientRepresentation);
@@ -91,7 +91,7 @@ public class KeycloakClientService {
     }
 
     private String getClientId(String realmName, String clientName){
-        RealmResource realmResource = keycloak.realm(realmName);
+        RealmResource realmResource = getRealmResource(realmName);
         ClientsResource clientsResource = realmResource.clients();
         String clientResource = clientsResource.findByClientId(clientName).get(0).getId();
 
@@ -100,7 +100,7 @@ public class KeycloakClientService {
 
     /** MAKE A CLIENT ROLE COMPOSITE OF A REALM LEVEL ROLE **/
     public void compositeClientRoleWithRealmRole(String realmName, String clientId, String clientRole, String realmRole){
-        RealmResource realmResource = keycloak.realm(realmName);
+        RealmResource realmResource = getRealmResource(realmName);
         ClientsResource clientsResource = realmResource.clients();
         ClientResource clientResource = clientsResource.get(clientId);
 
