@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -39,6 +41,8 @@ public class KeycloakClientService {
         String clientBackendId = getClientId(realmName, BACKEND_CLIENT_ID);
         compositeClientRoleWithRealmRole(realmName, clientBackendId, "USER", "APP_USER");
 
+        List<String> rolesToAssign = Arrays.asList("view-users", "query-users");
+        addServiceAccountsRoles(realmName, BACKEND_CLIENT_ID, rolesToAssign);
 
     }
 
@@ -128,5 +132,25 @@ public class KeycloakClientService {
     private RealmResource getRealmResource(String realmName) {
         return keycloak.realm(realmName);
     }
+
+    /** ASSIGN A SERVICE ACCOUNTS ROLE **/
+    private void addServiceAccountsRoles(String realmName, String clientIdName, List<String> rolesToAssign){
+        RealmResource realm = getRealmResource(realmName);
+        String realmManagementId = realm.clients().findByClientId("realm-management").get(0).getId();
+
+        String clientId = realm.clients().findByClientId(clientIdName).get(0).getId();
+        String serviceAccountUserId = realm.clients().get(clientId).getServiceAccountUser().getId();
+
+        List<RoleRepresentation> availableRoles = realm.users().get(serviceAccountUserId).roles().clientLevel(realmManagementId).listAvailable();
+
+        List<RoleRepresentation> filteredRolesToAssign = availableRoles.stream()
+                .filter(r -> rolesToAssign.contains(r.getName().toLowerCase()))
+                .collect(Collectors.toList());
+
+        realm.users().get(serviceAccountUserId).roles().clientLevel(realmManagementId).add(filteredRolesToAssign);
+
+        System.out.println("The following service accounts roles " + filteredRolesToAssign + " have been assigned to the " + clientIdName + " client");
+    }
+
 
 }
