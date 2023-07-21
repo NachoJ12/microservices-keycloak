@@ -8,6 +8,7 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -35,6 +36,9 @@ public class KeycloakClientService {
         backendClient.setEnabled(true);
 
         createClient(realmName, backendClient, List.of("USER", "MANAGER"));
+        String clientBackendId = getClientId(realmName, BACKEND_CLIENT_ID);
+        compositeClientRoleWithRealmRole(realmName, clientBackendId, "USER", "APP_USER");
+
 
     }
 
@@ -92,6 +96,32 @@ public class KeycloakClientService {
         String clientResource = clientsResource.findByClientId(clientName).get(0).getId();
 
         return clientResource;
+    }
+
+    /** MAKE A CLIENT ROLE COMPOSITE OF A REALM LEVEL ROLE **/
+    public void compositeClientRoleWithRealmRole(String realmName, String clientId, String clientRole, String realmRole){
+        RealmResource realmResource = keycloak.realm(realmName);
+        ClientsResource clientsResource = realmResource.clients();
+        ClientResource clientResource = clientsResource.get(clientId);
+
+        RolesResource rolesResource = realmResource.roles();
+
+        // Get client role (example: USER)
+        RoleResource clientRoleResource = clientResource.roles().get(clientRole);
+
+        // Get ID realm role (example: APP_USER)
+        RoleResource realmRoleResource = rolesResource.get(realmRole);
+        String realmRoleId = realmRoleResource.toRepresentation().getId();
+
+        // Create a list of composites roles
+        List<RoleRepresentation> composites = new ArrayList<>();
+        RoleRepresentation realmRoleRepresentation = new RoleRepresentation();
+        realmRoleRepresentation.setId(realmRoleId);
+        realmRoleRepresentation.setName(realmRole);
+        composites.add(realmRoleRepresentation);
+
+        // Add the composite roles to the client role
+        clientRoleResource.addComposites(composites);
     }
 
 
