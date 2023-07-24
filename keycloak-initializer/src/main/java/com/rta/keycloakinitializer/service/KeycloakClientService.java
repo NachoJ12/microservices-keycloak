@@ -155,7 +155,7 @@ public class KeycloakClientService {
 
     /** ADD GROUPS TO TOKEN **/
     // This method allows adding the Group Membership mapper to the Client Scope received by parameter
-    public void addGroupsToToken(String realmName, String scope) {
+    private void addGroupsToToken(String realmName, String scope) {
         RealmResource realmResource = getRealmResource(realmName);
         List<ClientScopeRepresentation> scopes = realmResource.clientScopes().findAll();
 
