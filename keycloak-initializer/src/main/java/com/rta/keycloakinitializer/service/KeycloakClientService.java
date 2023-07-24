@@ -1,5 +1,6 @@
 package com.rta.keycloakinitializer.service;
 
+import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.*;
@@ -43,6 +44,8 @@ public class KeycloakClientService {
         addServiceAccountsRoles(realmName, BACKEND_CLIENT_ID, rolesToAssign);
 
         addGroupsToToken(realmName, "profile");
+
+        createGroup(realmName, "PROVIDERS");
 
     }
 
@@ -194,6 +197,27 @@ public class KeycloakClientService {
 
     }
 
+
+    private String getCreatedId(Response response) {
+        String createdId = CreatedResponseUtil.getCreatedId(response);
+        response.close();
+        return createdId;
+    }
+
+    /** CREATE GROUP **/
+    private void createGroup(String realmName, String groupName) {
+        RealmResource realmResource = getRealmResource(realmName);
+
+        GroupsResource groupsResource = realmResource.groups();
+
+        GroupRepresentation groupRepresentation = new GroupRepresentation();
+        groupRepresentation.setName(groupName);
+        //groupRepresentation.singleAttribute("Title", "attributeTest");
+
+        String groupId = getCreatedId(groupsResource.add(groupRepresentation));
+
+        System.out.println("\nGroupId: " + groupId + " - name: " + groupName + ", created succesfully");
+    }
 
 
 }
