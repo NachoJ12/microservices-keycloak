@@ -2,9 +2,7 @@ package com.rta.keycloakinitializer.service;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.*;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.*;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
@@ -43,6 +41,8 @@ public class KeycloakClientService {
 
         List<String> rolesToAssign = Arrays.asList("view-users", "query-users");
         addServiceAccountsRoles(realmName, BACKEND_CLIENT_ID, rolesToAssign);
+
+        addGroupsToToken(realmName, "profile");
 
     }
 
@@ -151,6 +151,49 @@ public class KeycloakClientService {
 
         System.out.println("The following service accounts roles " + filteredRolesToAssign + " have been assigned to the " + clientIdName + " client");
     }
+
+
+    /** ADD GROUPS TO TOKEN **/
+    // This method allows adding the Group Membership mapper to the Client Scope received by parameter
+    public void addGroupsToToken(String realmName, String scope) {
+        RealmResource realmResource = getRealmResource(realmName);
+        List<ClientScopeRepresentation> scopes = realmResource.clientScopes().findAll();
+
+        ClientScopeRepresentation clientScope = scopes.stream()
+                .filter(cs -> cs.getName().equals(scope))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Client scope not found: " + scope));
+
+        String clientScopeId = clientScope.getId();
+
+        ProtocolMapperRepresentation groupMembership = new ProtocolMapperRepresentation();
+        groupMembership.setName("group");
+        groupMembership.setProtocol("openid-connect");
+        groupMembership.setProtocolMapper("oidc-group-membership-mapper");
+        groupMembership.getConfig().put("claim.name", "groups");
+        groupMembership.getConfig().put("full.path", "false");
+        groupMembership.getConfig().put("id.token.claim", "true");
+        groupMembership.getConfig().put("access.token.claim", "true");
+        groupMembership.getConfig().put("userinfo.token.claim", "true");
+
+        ClientScopeResource clientScopeResource = realmResource.clientScopes().get(clientScopeId);
+
+        try {
+            clientScopeResource.getProtocolMappers().createMapper(groupMembership);
+        } catch (Exception e) {
+            throw new RuntimeException("Error adding group mapper to client scope: " + e.getMessage(), e);
+        }
+
+        ClientScopeRepresentation updatedClientScope = clientScopeResource.toRepresentation();
+
+        try {
+            clientScopeResource.update(updatedClientScope);
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating client scope: " + e.getMessage(), e);
+        }
+
+    }
+
 
 
 }
