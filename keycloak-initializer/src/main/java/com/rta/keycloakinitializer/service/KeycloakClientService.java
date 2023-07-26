@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,8 @@ public class KeycloakClientService {
         addGroupsToToken(realmName, "profile");
 
         createGroup(realmName, "PROVIDERS");
+
+        createUser(realmName, "beliquasa", "password123", "beliqua-sa@beliquasa.com");
 
     }
 
@@ -218,6 +221,49 @@ public class KeycloakClientService {
 
         System.out.println("\nGroupId: " + groupId + " - name: " + groupName + ", created succesfully");
     }
+
+    /** CREATE A CREDENTIAL REPRESENTATION THAT ALLOWS YOU TO SET PASSWORDS **/
+    private CredentialRepresentation createPasswordCredentials(String password) {
+        CredentialRepresentation passwordCredentials = new CredentialRepresentation();
+        passwordCredentials.setTemporary(false);
+        passwordCredentials.setType(CredentialRepresentation.PASSWORD);
+        passwordCredentials.setValue(password);
+        return passwordCredentials;
+    }
+
+    /** CHECK IF THERE IS A USER WITH THE SAME NAME **/
+    private boolean userExists(String realmName, String username) {
+        List<UserRepresentation> userRepresentationList = getRealmResource(realmName)
+                .users()
+                .searchByUsername(username,true);
+
+        return !userRepresentationList.isEmpty();
+    }
+
+    /** CREATE NEW USER **/
+    private void createUser(String realmName, String username, String password, String email) {
+        RealmResource realmResource = getRealmResource(realmName);
+        UsersResource usersResource = realmResource.users();
+
+        // Create credentials (password)
+        CredentialRepresentation passwordCredentials = createPasswordCredentials(password);
+
+        if (!userExists(realmName, username)) {
+            UserRepresentation newUser = new UserRepresentation();
+            newUser.setUsername(username);
+            newUser.setEmail(email);
+            newUser.setCredentials(Collections.singletonList(passwordCredentials));
+            newUser.setEnabled(true);
+
+            usersResource.create(newUser);
+
+            String userId = usersResource.searchByUsername(username, true).get(0).getId();
+            System.out.println("\nUser created successfully. UserID: " + userId + " - username: " + username);
+        } else {
+            System.out.println("The user '" + username + "' already exists. It was not created.");
+        }
+    }
+
 
 
 }
