@@ -49,6 +49,7 @@ public class KeycloakClientService {
         createGroup(realmName, "PROVIDERS");
 
         createUser(realmName, "beliquasa", "password123", "beliqua-sa@beliquasa.com");
+        assignGroupToUser(realmName, "beliquasa", "PROVIDERS");
 
     }
 
@@ -264,6 +265,30 @@ public class KeycloakClientService {
         }
     }
 
+    /** ASSIGN GROUP TO A USER (both previously created) **/
+    public void assignGroupToUser(String realmName, String username, String groupName){
+        RealmResource realmResource = getRealmResource(realmName);
+
+        UserRepresentation userRepresentation = realmResource.users().searchByUsername(username,true).get(0);
+        UserResource userResource = realmResource.users().get(userRepresentation.getId());
+
+        GroupsResource groupsResource = realmResource.groups();
+
+        GroupRepresentation groupRepresentation = groupsResource.groups()
+                .stream()
+                .filter(groupR -> groupR.getName().equals(groupName))
+                .findFirst()
+                .orElse(null);
+
+        if(groupRepresentation != null){
+            userResource.joinGroup(groupRepresentation.getId());
+
+            System.out.printf("Assigned to user '%s' the group '%s' with groupId '%s'",
+                    userRepresentation.getUsername(), groupRepresentation.getName(), groupRepresentation.getId() );
+        } else {
+            System.out.println("Group '" + groupName + "' not found");
+        }
+    }
 
 
 }
