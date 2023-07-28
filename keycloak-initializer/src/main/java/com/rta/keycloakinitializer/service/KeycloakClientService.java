@@ -51,6 +51,9 @@ public class KeycloakClientService {
         createUser(realmName, "beliquasa", "password123", "beliqua-sa@beliquasa.com");
         assignGroupToUser(realmName, "beliquasa", "PROVIDERS");
 
+        createUser(realmName, "user1", "password123", "user1@gmail.com");
+        assignRoleToUser(realmName, "user1", clientBackendId,"USER");
+
     }
 
     private void createRealm(String realmName){
@@ -287,6 +290,29 @@ public class KeycloakClientService {
                     userRepresentation.getUsername(), groupRepresentation.getName(), groupRepresentation.getId() );
         } else {
             System.out.println("Group '" + groupName + "' not found");
+        }
+    }
+
+    /** ASSING ROLE TO A USER (both previously created) **/
+    private void assignRoleToUser(String realmName, String username, String clientId, String roleName){
+        RealmResource realmResource = getRealmResource(realmName);
+
+        UserRepresentation userRepresentation = realmResource.users().searchByUsername(username,true).get(0);
+        UserResource userResource = realmResource.users().get(userRepresentation.getId());
+
+        // Search for the client's role
+        ClientsResource clientsResource = realmResource.clients();
+        ClientResource clientResource = clientsResource.get(clientId);
+        RoleResource userRoleResource = clientResource.roles().get(roleName);
+        RoleRepresentation roleRepresentation = userRoleResource.toRepresentation();
+
+        if(roleRepresentation != null){
+            userResource.roles().clientLevel(clientId).add(Collections.singletonList(roleRepresentation));
+
+            System.out.printf("Assigned to user '%s' the role '%s' with roleId '%s'",
+                    userRepresentation.getUsername(), roleRepresentation.getName(), roleRepresentation.getId());
+        } else {
+            System.out.println("Role '" + roleName + "' not found");
         }
     }
 
