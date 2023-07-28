@@ -269,7 +269,7 @@ public class KeycloakClientService {
     }
 
     /** ASSIGN GROUP TO A USER (both previously created) **/
-    public void assignGroupToUser(String realmName, String username, String groupName){
+    private void assignGroupToUser(String realmName, String username, String groupName){
         RealmResource realmResource = getRealmResource(realmName);
 
         UserRepresentation userRepresentation = realmResource.users().searchByUsername(username,true).get(0);
