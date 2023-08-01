@@ -321,10 +321,8 @@ public class KeycloakClientService {
 
     /** CHECK IF THERE IS A REALM WITH THE SAME NAME **/
     private boolean realmExists(String realmName){
-        String existingRealm = getRealmResource(realmName).toRepresentation().getRealm();
-        boolean exists = existingRealm != null && existingRealm.equals(realmName);
-
-        return exists;
+        return keycloak.realms().findAll().stream()
+                .anyMatch(realm -> realm.getRealm().equals(realmName));
     }
 
 }
