@@ -19,6 +19,8 @@ public class KeycloakClientService {
 
     private static final String BACKEND_CLIENT_ID = System.getenv("BACKEND_CLIENT_ID");
     private static final String BACKEND_CLIENT_SECRET = System.getenv("BACKEND_CLIENT_SECRET");
+    private static final String GATEWAY_CLIENT_ID = System.getenv("GATEWAY_CLIENT_ID");
+    private static final String GATEWAY_CLIENT_SECRET = System.getenv("GATEWAY_CLIENT_SECRET");
 
     private final Keycloak keycloak;
 
@@ -44,6 +46,23 @@ public class KeycloakClientService {
 
             List<String> rolesToAssign = Arrays.asList("view-users", "query-users");
             addServiceAccountsRoles(realmName, BACKEND_CLIENT_ID, rolesToAssign);
+
+            // Create gateway-client representation
+            ClientRepresentation gatewayClient = new ClientRepresentation();
+            String urlGateway = "http://localhost:9090";
+            gatewayClient.setClientId(GATEWAY_CLIENT_ID);
+            gatewayClient.setSecret(GATEWAY_CLIENT_SECRET);
+            gatewayClient.setRootUrl(urlGateway);
+            gatewayClient.setWebOrigins(List.of("/*"));
+            gatewayClient.setRedirectUris(List.of(urlGateway + "/*"));
+            gatewayClient.setAdminUrl(urlGateway);
+            gatewayClient.setEnabled(true);
+            gatewayClient.setServiceAccountsEnabled(true);
+            //gateway.setDirectAccessGrantsEnabled(true);
+
+            createClient(realmName, gatewayClient, List.of("USER"));
+            String gatewayClientId = getClientId(realmName, GATEWAY_CLIENT_ID);
+            compositeClientRoleWithRealmRole(realmName, gatewayClientId, "USER", "APP_USER");
 
             addGroupsToToken(realmName, "profile");
 
