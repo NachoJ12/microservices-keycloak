@@ -27,33 +27,36 @@ public class KeycloakClientService {
     }
 
     public void createRealmAndConfigs(String realmName) {
-        createRealm(realmName);
-        setRealmLevelRoles(realmName, List.of("APP_USER", "APP_ADMIN"));
+        if(!realmExists(realmName)) {
+            createRealm(realmName);
+            setRealmLevelRoles(realmName, List.of("APP_USER", "APP_ADMIN"));
 
-        // Create backend client representation
-        ClientRepresentation backendClient = new ClientRepresentation();
-        backendClient.setClientId(BACKEND_CLIENT_ID);
-        backendClient.setSecret(BACKEND_CLIENT_SECRET);
-        backendClient.setServiceAccountsEnabled(true);
-        backendClient.setEnabled(true);
+            // Create backend client representation
+            ClientRepresentation backendClient = new ClientRepresentation();
+            backendClient.setClientId(BACKEND_CLIENT_ID);
+            backendClient.setSecret(BACKEND_CLIENT_SECRET);
+            backendClient.setServiceAccountsEnabled(true);
+            backendClient.setEnabled(true);
 
-        createClient(realmName, backendClient, List.of("USER", "MANAGER"));
-        String clientBackendId = getClientId(realmName, BACKEND_CLIENT_ID);
-        compositeClientRoleWithRealmRole(realmName, clientBackendId, "USER", "APP_USER");
+            createClient(realmName, backendClient, List.of("USER", "MANAGER"));
+            String clientBackendId = getClientId(realmName, BACKEND_CLIENT_ID);
+            compositeClientRoleWithRealmRole(realmName, clientBackendId, "USER", "APP_USER");
 
-        List<String> rolesToAssign = Arrays.asList("view-users", "query-users");
-        addServiceAccountsRoles(realmName, BACKEND_CLIENT_ID, rolesToAssign);
+            List<String> rolesToAssign = Arrays.asList("view-users", "query-users");
+            addServiceAccountsRoles(realmName, BACKEND_CLIENT_ID, rolesToAssign);
 
-        addGroupsToToken(realmName, "profile");
+            addGroupsToToken(realmName, "profile");
 
-        createGroup(realmName, "PROVIDERS");
+            createGroup(realmName, "PROVIDERS");
 
-        createUser(realmName, "beliquasa", "password123", "beliqua-sa@beliquasa.com");
-        assignGroupToUser(realmName, "beliquasa", "PROVIDERS");
+            createUser(realmName, "beliquasa", "password123", "beliqua-sa@beliquasa.com");
+            assignGroupToUser(realmName, "beliquasa", "PROVIDERS");
 
-        createUser(realmName, "user1", "password123", "user1@gmail.com");
-        assignRoleToUser(realmName, "user1", clientBackendId,"USER");
-
+            createUser(realmName, "user1", "password123", "user1@gmail.com");
+            assignRoleToUser(realmName, "user1", clientBackendId, "USER");
+        } else {
+            System.out.printf("The realm '%s' already exists", realmName);
+        }
     }
 
     private void createRealm(String realmName){
@@ -316,5 +319,12 @@ public class KeycloakClientService {
         }
     }
 
+    /** CHECK IF THERE IS A REALM WITH THE SAME NAME **/
+    private boolean realmExists(String realmName){
+        String existingRealm = getRealmResource(realmName).toRepresentation().getRealm();
+        boolean exists = existingRealm != null && existingRealm.equals(realmName);
+
+        return exists;
+    }
 
 }
