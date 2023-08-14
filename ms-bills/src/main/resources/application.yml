@@ -27,6 +27,13 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  # Security OAuth2
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: http://localhost:8090/realms/ecommerce-rta
+          jwk-set-uri: ${spring.security.oauth2.resource-server.jwt.issuer-uri}/protocol/openid-connect/certs
 
 # Eureka
 eureka:
