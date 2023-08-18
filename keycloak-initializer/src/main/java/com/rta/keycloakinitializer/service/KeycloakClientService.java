@@ -73,6 +73,8 @@ public class KeycloakClientService {
 
             createUser(realmName, "user1", "password123", "user1@gmail.com");
             assignRoleToUser(realmName, "user1", clientBackendId, "USER");
+
+            createUser(realmName, "user2", "password123", "user2@gmail.com");
         } else {
             System.out.printf("The realm '%s' already exists", realmName);
         }
