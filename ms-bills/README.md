@@ -43,7 +43,7 @@ This microservice provides the following endpoints:
 
 ## Technical Documentation
 
-For a more detailed understanding of the workflow of this microservice, refer to the [full technical documentation](../DOCUMENTATION.md).
+For a more detailed understanding of the workflow of this microservice, refer to the [full technical documentation](../README.md).
 
 ## Instructions for Use
 
@@ -59,4 +59,4 @@ Launch the ms-bills microservice. Ensure that the microservice is configured to 
 
 Please note that the Eureka server and Keycloak are integral components for the proper functioning of the ms-bills microservice. Make sure they are properly configured and operational before starting the microservice.
 
-Remember to set any required environment variables for the microservice's operation, as described in the [full technical documentation](../DOCUMENTATION.md).
+Remember to set any required environment variables for the microservice's operation, as described in the [full technical documentation](../README.md).

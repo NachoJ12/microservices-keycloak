@@ -67,7 +67,7 @@ Keycloak Initializer is a tool for programmatically creating realms, clients, us
 
 ## Technical Documentation
 
-For a more detailed understanding, refer to the [full technical documentation](../DOCUMENTATION.md).
+For a more detailed understanding, refer to the [full technical documentation](../README.md).
 
 ## Instructions for Use
 
@@ -77,4 +77,6 @@ For a more detailed understanding, refer to the [full technical documentation](.
 
 2. Initialize Keycloak:
 
-   Run the `KeycloakInitializerApplication` to create the realm, clients, users, roles, groups and configurations.
+   Run the `KeycloakInitializerApplication` to create the realm, clients, users, roles, groups and configurations. **This must be executed only once**.
+
+   It will be possible to visualize in the console the description of the actions performed as well as the IDs generated for the users automatically by keycloak (due to integrity issues keycloak does not allow to set the id directly in the creation of the users).
